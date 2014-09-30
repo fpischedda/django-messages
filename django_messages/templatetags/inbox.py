@@ -1,4 +1,6 @@
 from django.template import Library, Node, TemplateSyntaxError
+from django_messages.models import inbox_count_for
+
 
 class InboxOutput(Node):
     def __init__(self, varname=None):
@@ -7,14 +9,16 @@ class InboxOutput(Node):
     def render(self, context):
         try:
             user = context['user']
-            count = user.received_messages.filter(read_at__isnull=True, recipient_deleted_at__isnull=True).count()
+            count = inbox_count_for(user)
         except (KeyError, AttributeError):
             count = ''
+
         if self.varname is not None:
             context[self.varname] = count
             return ""
         else:
             return "%s" % (count)
+
 
 def do_print_inbox_count(parser, token):
     """
