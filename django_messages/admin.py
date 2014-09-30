@@ -11,15 +11,16 @@ if "notification" in settings.INSTALLED_APPS:
     from notification import models as notification
 else:
     notification = None
-    
+
 from django_messages.models import Message
+
 
 class MessageAdminForm(forms.ModelForm):
     """
     Custom AdminForm to enable messages to groups and all users.
     """
     group = forms.ChoiceField(label=_('group'), required=False,
-        help_text=_('Creates the message optionally for all users or a group of users.'))
+                              help_text=_('Creates the message optionally for all users or a group of users.'))
 
     def __init__(self, *args, **kwargs):
         super(MessageAdminForm, self).__init__(*args, **kwargs)
@@ -33,8 +34,9 @@ class MessageAdminForm(forms.ModelForm):
     class Meta:
         model = Message
         fields = ('sender', 'recipient', 'group', 'parent_msg', 'subject',
-                'body', 'sent_at', 'read_at', 'replied_at', 'sender_deleted_at',
-                'recipient_deleted_at')
+                  'body', 'read_at', 'replied_at',
+                  'sender_deleted_at', 'recipient_deleted_at')
+
 
 class MessageAdmin(admin.ModelAdmin):
     form = MessageAdminForm
@@ -50,7 +52,7 @@ class MessageAdmin(admin.ModelAdmin):
                 'parent_msg',
                 'subject', 'body',
             ),
-            'classes': ('monospace' ),
+            'classes': ('monospace'),
         }),
         (_('Date/time'), {
             'fields': (
@@ -75,18 +77,19 @@ class MessageAdmin(admin.ModelAdmin):
         the message is effectively resent to those users.
         """
         obj.save()
-        
+
         if notification:
-            # Getting the appropriate notice labels for the sender and recipients.
+            #  Getting the appropriate notice labels for the sender and
+            #  recipients.
             if obj.parent_msg is None:
                 sender_label = 'messages_sent'
                 recipients_label = 'messages_received'
             else:
                 sender_label = 'messages_replied'
                 recipients_label = 'messages_reply_received'
-                
+
             # Notification for the sender.
-            notification.send([obj.sender], sender_label, {'message': obj,})
+            notification.send([obj.sender], sender_label, {'message': obj})
 
         if form.cleaned_data['group'] == 'all':
             # send to all users
@@ -99,14 +102,14 @@ class MessageAdmin(admin.ModelAdmin):
                 group = Group.objects.get(pk=group)
                 recipients.extend(
                     list(group.user_set.exclude(pk=obj.recipient.pk)))
-        # create messages for all found recipients
-        for user in recipients:
-            obj.pk = None
-            obj.recipient = user
-            obj.save()
+                # create messages for all found recipients
+                for user in recipients:
+                    obj.pk = None
+                    obj.recipient = user
+                    obj.save()
 
             if notification:
                 # Notification for the recipient.
-                notification.send([user], recipients_label, {'message' : obj,})
-            
+                notification.send([user], recipients_label, {'message': obj})
+
 admin.site.register(Message, MessageAdmin)

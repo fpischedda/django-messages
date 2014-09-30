@@ -58,7 +58,7 @@ class Message(models.Model):
     parent_msg = models.ForeignKey('self', related_name='next_messages',
                                    null=True, blank=True,
                                    verbose_name=_("Parent message"))
-    sent_at = models.DateTimeField(_("sent at"), auto_add_now=True)
+    sent_at = models.DateTimeField(_("sent at"), auto_now_add=True)
     read_at = models.DateTimeField(_("read at"), null=True, blank=True)
     replied_at = models.DateTimeField(_("replied at"), null=True, blank=True)
     sender_deleted_at = models.DateTimeField(_("Sender deleted at"),
@@ -68,7 +68,7 @@ class Message(models.Model):
 
     objects = MessageManager()
 
-    def new(self):
+    def is_unread(self):
         """returns whether the recipient has read the message or not"""
         if self.read_at is not None:
             return False
