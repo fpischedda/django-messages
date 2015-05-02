@@ -1,3 +1,4 @@
+import os
 from django.conf import settings
 from django.db import models
 #from django.db.models import signals
@@ -80,6 +81,17 @@ class Message(models.Model):
             return True
         return False
 
+    def has_attachments(self):
+        """returns true if message has attachments"""
+        if self.message_attachment.all().count() > 0:
+            return True
+        else:
+            return False
+
+    def attachments(self):
+        """returns the list of attachments of this message"""
+        return self.message_attachment.all()
+
     def __str__(self):
         return self.subject
 
@@ -91,6 +103,22 @@ class Message(models.Model):
         ordering = ['-sent_at']
         verbose_name = _("Message")
         verbose_name_plural = _("Messages")
+
+
+def attachment_filename(instance, filename):
+    return "{attachment_dir}/{message_id}/{filename}".format(
+        attachment_dir=settings.ATTACHMENT_DIR,
+        message_id=instance.message.id,
+        filename=filename)
+
+
+class MessageAttachment(models.Model):
+
+    message = models.ForeignKey(Message, related_name='message_attachment')
+    content = models.FileField(upload_to=attachment_filename)
+
+    def filename(self):
+        return os.path.basename(self.content.name)
 
 
 def inbox_count_for(user):

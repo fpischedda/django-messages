@@ -13,8 +13,9 @@ class ComposeForm(forms.Form):
     recipient = CommaSeparatedUserField(label=_(u"Recipient"))
     subject = forms.CharField(label=_(u"Subject"), max_length=120)
     body = forms.CharField(label=_(u"Body"),
-                           widget=forms.Textarea(attrs={'rows': '12',
-                                                        'cols': '55'}))
+                           widget=forms.Textarea(attrs={'rows': '30',
+                                                        'cols': '90'}))
+    file = forms.FileField(required=False)
 
     def __init__(self, *args, **kwargs):
         recipient_filter = kwargs.pop('recipient_filter', None)

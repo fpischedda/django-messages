@@ -9,6 +9,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 
 from django_messages.models import Message
+from django_messages.models import MessageAttachment
 from django_messages.forms import ComposeForm
 from django_messages.utils import (format_quote, get_user_model,
                                    get_username_field)
@@ -80,7 +81,14 @@ def compose(request, recipient=None, form_class=ComposeForm,
     if request.method == "POST":
         form = form_class(request.POST, recipient_filter=recipient_filter)
         if form.is_valid():
-            form.save(sender=request.user)
+            msg_list = form.save(sender=request.user)
+            for f in request.FILES.getlist('file'):
+                for m in msg_list:
+                    attachment = MessageAttachment(
+                        message=m,
+                        content=f)
+                    attachment.save()
+
             messages.info(request, _(u"Message successfully sent."))
             if success_url is None:
                 success_url = reverse('messages_inbox')
