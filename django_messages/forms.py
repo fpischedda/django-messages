@@ -10,7 +10,8 @@ class ComposeForm(forms.Form):
     """
     A simple default form for private messages.
     """
-    recipient = CommaSeparatedUserField(label=_(u"Recipient"))
+    recipient = CommaSeparatedUserField(label=_(u"Recipient"),
+                                        widget=forms.HiddenInput)
     subject = forms.CharField(label=_(u"Subject"), max_length=120)
     body = forms.CharField(label=_(u"Body"),
                            widget=forms.Textarea(attrs={'rows': '30',
