@@ -4,6 +4,20 @@ from django.utils import timezone
 
 from django_messages.models import Message
 from django_messages.fields import CommaSeparatedUserField
+from dashboard.models import DashboardOption
+
+
+def append_signature(user, body):
+
+    signature = ""
+    try:
+        signature = DashboardOption.objects.get(pk='message_signature').value
+    except:
+        pass
+
+    return "{body}\n{first_name} {last_name}\n{signature}".format(
+        body=body, first_name=user.first_name, last_name=user.last_name,
+        signature=signature)
 
 
 class ComposeForm(forms.Form):
@@ -27,7 +41,7 @@ class ComposeForm(forms.Form):
     def save(self, sender, parent_msg=None):
         recipients = self.cleaned_data['recipient']
         subject = self.cleaned_data['subject']
-        body = self.cleaned_data['body']
+        body = append_signature(sender, self.cleaned_data['body'])
         message_list = []
         for r in recipients:
             msg = Message(
